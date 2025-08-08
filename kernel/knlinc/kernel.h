@@ -1,12 +1,12 @@
 /*
  *----------------------------------------------------------------------
- *    micro T-Kernel 3.00.08.B0
+ *    micro T-Kernel 3.00.08.B1
  *
  *    Copyright (C) 2006-2024 by Ken Sakamura.
  *    This software is distributed under the T-License 2.2.
  *----------------------------------------------------------------------
  *
- *    Released by TRON Forum(http://www.tron.org) at 2024/12.
+ *    Released by TRON Forum(http://www.tron.org) at 2025/7.
  *
  *----------------------------------------------------------------------
  */
@@ -29,7 +29,16 @@
 
 #include "tstdlib.h"
 
+/*
+ * Task control block (TCB)
+ */
 typedef struct task_control_block	TCB;
+
+/* Task System Dependent definition
+	There is no definition for this in the standard.
+	It is redefined in the system-dependent section as necessary.
+*/
+#define TCB_SYSDEPEND_INFO		/* None */
 
 #include "../tkernel/timer.h"
 #include "../tkernel/winfo.h"
@@ -95,8 +104,10 @@ struct task_control_block {
 #if USE_OBJECT_NAME
 	UB	name[OBJECT_NAME_LENGTH];	/* name */
 #endif
-};
 
+/* TCB System Dependent definition */
+	TCB_SYSDEPEND_INFO
+};
 
 /*
  * Task dispatch disable state
@@ -252,7 +263,7 @@ IMPORT ER knl_finish_device( void );
 /*
  * micro T-Kernel Startup / Finalization (sysinit.c)
  */
-#ifndef ADD_PREFIX_MAIN_FUNC
+#if !ADD_PREFIX_MAIN_FUNC
 IMPORT INT main(void);
 #else
 IMPORT INT knl_main(void);
