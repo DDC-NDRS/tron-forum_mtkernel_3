@@ -1,12 +1,12 @@
 /*
  *----------------------------------------------------------------------
- *    micro T-Kernel 3.00.08.B1
+ *    micro T-Kernel 3.00.08.B2
  *
- *    Copyright (C) 2006-2025 by Ken Sakamura.
+ *    Copyright (C) 2006-2026 by Ken Sakamura.
  *    This software is distributed under the T-License 2.2.
  *----------------------------------------------------------------------
  *
- *    Released by TRON Forum(http://www.tron.org) at 2025/08.
+ *    Released by TRON Forum(http://www.tron.org) at 2026/03.
  *
  *----------------------------------------------------------------------
  */
@@ -74,7 +74,7 @@
 
 #define SCB_STIR	0xE000EF00
 #define SCB_ICIALLU	0xE000EF50
-#define SCB_DCIMVAC	0xE000DF5C
+#define SCB_DCIMVAC	0xE000EF5C
 #define SCB_DCISW	0xE000EF60
 #define	SCB_DCCMVAC	0xE000EF68
 #define	SCB_DCCSW	0xE000EF6C
@@ -93,7 +93,7 @@
 #define SHCSR_MEMFAULTENA	(1<<16)	/* Enable MemFault */
 
 #define CCSIDR_VAL_WAYS(x)	(((x) & (0x1FF8))>>3)
-#define CCSIDR_VAL_SETS(x)	(((x) & (0xFFFE0)) >> 13)
+#define CCSIDR_VAL_SETS(x)	(((x) & (0x0FFFE000)) >> 13)
 
 #define SCB_VAL_SET(x)	((x<<5) & 0x00003FE0)	/* SCB_DCISW, DCCSW, DCCISW SET */
 #define SCB_VAL_WAY(x)	((x<<30) & 0xC0000000)	/* SCB_DCISW, DCCSW, DCCISW WAY */
@@ -121,8 +121,22 @@
  *   SHRP2    SVCall    (Rev)     (Rev)     (Rev)
  *   SHPR3    SysTick   PendSV    (Rsv)     DebugMon-
  */
-#define	SCB_SHPR2_VAL	((INTPRI_VAL(INTPRI_SVC)<<23))
+#define	SCB_SHPR2_VAL	((INTPRI_VAL(INTPRI_SVC)<<24))
 #define SCB_SHPR3_VAL	((INTPRI_VAL(INTPRI_SYSTICK)<<24)|(INTPRI_VAL(INTPRI_PENDSV)<<16))
+
+
+/*
+ * CPU Cache (Cortex-M55&M85 has CPU cache)
+ */
+#if defined(CPU_CORE_ACM85) || defined(CPU_CORE_ACM55)
+#define CPU_HAS_CACHE	1
+#define	SCB_DCACHE_LINE_SIZE	32
+#define	SCB_ICACHE_LINE_SIZE	32
+
+#else
+#define CPU_HAS_CACHE	0
+
+#endif	/* defined(CPU_CORE_ACM85) || defined(CPU_CORE_ACM55) */
 
 /*
  * System Timer
@@ -167,17 +181,6 @@
 #define FPU_FPCCR_ASPEN		0x80000000	/* FPCCR.ASPEN */
 #define FPU_FPCCR_LSPEN		0x40000000	/* FPCCR.LSPEN */
 
-/* ------------------------------------------------------------------------ */
-/* Clock frequency
- */
-#ifndef _in_asm_source_
-IMPORT UW knl_sysclk;	// System clock
-
-#define	SYSCLK		knl_sysclk		// System clock
-#define TMCLK_KHz	(SYSCLK/1000)		// System timer clock input (kHz)
-#define TMCLK		(TMCLK_KHz/1000)	// System timer clock input (MHz)
-
-#endif
 
 /* ------------------------------------------------------------------------ */
 /*

@@ -6,7 +6,7 @@
  *    This software is distributed under the T-License 2.2.
  *----------------------------------------------------------------------
  *
- *    Released by TRON Forum(http://www.tron.org) at 2025/08
+ *    Released by TRON Forum(http://www.tron.org) at 2025/11
  *
  *----------------------------------------------------------------------
  */
@@ -24,7 +24,7 @@
 #include "cpu_status.h"
 
 /* HLL Interrupt Handler Table */
-LOCAL UW hllint_tbl[sizeof(UW)*N_INTVEC];
+LOCAL UW hllint_tbl[N_INTVEC];
 
 /* ------------------------------------------------------------------------ */
 /*
@@ -40,7 +40,7 @@ EXPORT void knl_hll_inthdr(void)
 	intno	= knl_get_ipsr() - 16;
 	inthdr	= (FP)hllint_tbl[intno];
 
-	(*inthdr)(intno);
+	(*(void(*)(UW))inthdr)(intno);
 
 	LEAVE_TASK_INDEPENDENT;
 }
@@ -99,12 +99,6 @@ EXPORT void knl_return_inthdr(void)
 {
 	/* No processing in ARM. */
 	return;
-}
-
-void knl_default_handler(void)
-{
-	tm_printf((UB*)"Default Handler\n");
-	while(1);
 }
 
 /* ------------------------------------------------------------------------ */

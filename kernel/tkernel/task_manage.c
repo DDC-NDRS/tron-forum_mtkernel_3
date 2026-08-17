@@ -6,7 +6,7 @@
  *    This software is distributed under the T-License 2.2.
  *----------------------------------------------------------------------
  *
- *    Released by TRON Forum(http://www.tron.org) at 2025/07.
+ *    Released by TRON Forum(http://www.tron.org) at 2025/08.
  *
  *----------------------------------------------------------------------
  */
@@ -100,6 +100,8 @@ SYSCALL ID tk_cre_tsk( CONST T_CTSK *pk_ctsk )
 #ifdef DEFINE_TSK_SYSDEPEND
 	ercd = knl_tcb_sysdep_cre(tcb, pk_ctsk);	// TCB system dependent initialization
 	if(ercd < E_OK) {
+		QueInsert(&tcb->tskque, &knl_free_tcb);
+		tcb->state = TS_NONEXIST;		
 		goto error_exit;
 	}
 #endif
@@ -125,10 +127,15 @@ SYSCALL ID tk_cre_tsk( CONST T_CTSK *pk_ctsk )
  * Task deletion
  *	Call from critical section
  */
-LOCAL void knl_del_tsk( TCB *tcb )
+LOCAL ER knl_del_tsk( TCB *tcb )
 {
+	ER ercd = E_OK;
+
 #ifdef DEFINE_TSK_SYSDEPEND
-	knl_tcb_sysdep_del(tcb);	// TCB system dependent finalization
+	ercd = knl_tcb_sysdep_del(tcb);	// TCB system dependent finalization
+	if ( ercd < E_OK ) {
+		return ercd;
+	}
 #endif
 
 #if USE_IMALLOC
@@ -143,6 +150,8 @@ LOCAL void knl_del_tsk( TCB *tcb )
 	/* Return control block to FreeQue */
 	QueInsert(&tcb->tskque, &knl_free_tcb);
 	tcb->state = TS_NONEXIST;
+
+	return ercd;
 }
 
 #ifdef USE_FUNC_TK_DEL_TSK
@@ -165,7 +174,7 @@ SYSCALL ER tk_del_tsk( ID tskid )
 	if ( state != TS_DORMANT ) {
 		ercd = ( state == TS_NONEXIST )? E_NOEXS: E_OBJ;
 	} else {
-		knl_del_tsk(tcb);
+		ercd = knl_del_tsk(tcb);
 	}
 	END_CRITICAL_SECTION;
 

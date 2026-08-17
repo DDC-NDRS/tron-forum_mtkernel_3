@@ -2,11 +2,11 @@
  *----------------------------------------------------------------------
  *    micro T-Kernel 3.00.08.B1
  *
- *    Copyright (C) 2006-2025 by Ken Sakamura.
+ *    Copyright (C) 2006-2026 by Ken Sakamura.
  *    This software is distributed under the T-License 2.2.
  *----------------------------------------------------------------------
  *
- *    Released by TRON Forum(http://www.tron.org) at 2025/08.
+ *    Released by TRON Forum(http://www.tron.org) at 2026/06.
  *
  *----------------------------------------------------------------------
  */
@@ -27,7 +27,7 @@
 /*
  * Exception handler table (RAM)
  */
-EXPORT UW knl_exctbl[sizeof(UW)*(N_SYSVEC + N_INTVEC)]
+EXPORT UW knl_exctbl[N_SYSVEC + N_INTVEC]
 	__attribute__((section(".mtk_exctbl"))) __attribute__ ((aligned(EXCTBL_ALIGN)));
 
 EXPORT UW *knl_exctbl_o;	// Exception handler table (Origin)
@@ -67,9 +67,20 @@ EXPORT void knl_start_mtkernel(void)
 	out_w(SCB_VTOR, (UW)knl_exctbl);
 #endif
 
+#if USE_CACHE && CPU_HAS_CACHE
+	if(knl_check_dcache()) {	// Clear D-cache if it is valid
+		knl_clean_dcache_adr(knl_exctbl, sizeof(knl_exctbl));
+	}
+	if(knl_check_icache()) {	// Clear I-cache if it is valid
+		knl_dsb();
+		knl_invalidate_icache();
+		knl_isb();
+	}
+#endif	/* USE_CACHE && CPU_HAS_CACHE */
+
 	/* Configure exception priorities */
 	reg = *(_UW*)SCB_AIRCR;
-	reg = (reg & (~AIRCR_PRIGROUP3)) | AIRCR_PRIGROUP0;	// PRIGRP:SUBPRI = 4 : 4
+	reg = (reg & (~AIRCR_PRIGROUP7)) | AIRCR_PRIGROUP3;	// PRIGRP:SUBPRI = 4 : 4
 	*(_UW*)SCB_AIRCR = (reg & 0x0000FFFF) | AIRCR_VECTKEY;
 
 	/* Enable UsageFault & BusFault & MemFault */

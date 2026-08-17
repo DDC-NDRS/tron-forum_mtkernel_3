@@ -6,7 +6,7 @@
  *    This software is distributed under the T-License 2.2.
  *----------------------------------------------------------------------
  *
- *    Released by TRON Forum(http://www.tron.org) at 2025/08.
+ *    Released by TRON Forum(http://www.tron.org) at 2025/11.
  *
  *----------------------------------------------------------------------
  */
@@ -34,8 +34,8 @@
 /* SYSCONF : micro T-Kernel system configuration
  */
 
-#define	CNF_SYSTEMAREA_TOP	0x24100400	/* 0: Use system default address */
-#define CNF_SYSTEMAREA_END	0x2417FFFF	/* 0: Use system default address */
+#define	CNF_SYSTEMAREA_TOP	0	/* 0: Use system default address */
+#define CNF_SYSTEMAREA_END	0	/* 0: Use system default address */
 
 #define	CNF_MAX_TSKPRI		32	/* Task Max priority */
 
@@ -204,10 +204,17 @@
 
 /*---------------------------------------------------------------------- */
 /*
- *	Use function Definition
+ *	Extensions definition
+ */
+#if EXT_SEC
+#include <config/config_sec.h>
+#endif
+
+/*---------------------------------------------------------------------- */
+/*
+ *	Defining the functions to use
  */
 #include "config_func.h"
 
-#include <ext_sec/config/config_tz.h>
 
 #endif /* __TK_CONFIG__ */
